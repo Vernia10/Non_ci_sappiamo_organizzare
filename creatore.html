@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Creatore - non_ci_sappiamo_organizzare</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f0f0f0;
+    }
+    input, button {
+      margin: 10px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    #date-list input {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Configura il tuo sondaggio</h1>
+
+  <div>
+    <label>Inserisci le date (una per riga):</label><br>
+    <textarea id="date-list" rows="6" cols="30" placeholder="Es: 21 marzo&#10;22 marzo&#10;23 marzo"></textarea>
+  </div>
+
+  <div>
+    <label>Quanti giorni devono avere più partecipanti?</label><br>
+    <input type="number" id="max-6-days" min="0" value="1">
+  </div>
+
+  <button id="genera-codice">Genera Codice</button>
+
+  <div id="output" style="margin-top: 20px; font-weight: bold;"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8wo_xQ3_nb2EKpXSm775skjhzYYeVCms",
+      authDomain: "non-ci-sappiamo-organizzare.firebaseapp.com",
+      projectId: "non-ci-sappiamo-organizzare",
+      storageBucket: "non-ci-sappiamo-organizzare.firebasestorage.app",
+      messagingSenderId: "994257864018",
+      appId: "1:994257864018:web:deff50a9f6a7fed705668b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function generaCodice() {
+      return Math.random().toString().slice(2, 8);
+    }
+
+    document.getElementById('genera-codice').addEventListener('click', async () => {
+      const dateList = document.getElementById('date-list').value.trim().split('\n').map(d => d.trim()).filter(Boolean);
+      const extraMax = parseInt(document.getElementById('max-6-days').value);
+
+      if (dateList.length === 0 || isNaN(extraMax)) {
+        alert("Inserisci le date e il numero di giorni speciali.");
+        return;
+      }
+
+      const codice = generaCodice();
+
+      try {
+        await addDoc(collection(db, "sondaggi"), {
+          codice: codice,
+          date: dateList,
+          maxExtra: extraMax,
+          voti: {},
+          creato: new Date()
+        });
+
+        document.getElementById('output').innerText = "Codice generato: " + codice;
+      } catch (error) {
+        console.error("Errore durante il salvataggio:", error);
+        alert("Si è verificato un errore. Riprova.");
+      }
+    });
+  </script>
+</body>
+</html>
