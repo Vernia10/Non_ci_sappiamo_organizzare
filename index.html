@@ -1,89 +1,58 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>non_ci_sappiamo_organizzare</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
-      background-color: #f0f0f0;
-    }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>non_ci_sappiamo_organizzare</title>
 </head>
 <body>
 
-  <h1>Benvenuto su non_ci_sappiamo_organizzare</h1>
-  
-  <!-- Pulsante login -->
-  <button id="login-btn">Accedi con Google</button>
-  <button id="logout-btn" style="display: none;">Esci</button>
+    <!-- Bottone per il login tramite Google -->
+    <button id="login-btn">Accedi con Google</button>
 
-  <div style="margin-top: 30px;">
-    <!-- Pulsanti per scegliere ruolo -->
-    <button class="role-btn" id="creator-btn" style="display: none;" onclick="window.location.href='creatore.html'">Creatore</button>
-    <button class="role-btn" id="participant-btn" style="display: none;" onclick="window.location.href='partecipante.html'">Partecipante</button>
-  </div>
+    <!-- Script Firebase -->
+    <script type="module">
+        // Importa le funzioni necessarie da Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-  <script type="module">
-    // Importa Firebase SDK
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        // La configurazione di Firebase per il tuo progetto
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8wo_xQ3_nb2EKpXSm775skjhzYYeVCms",
+            authDomain: "non-ci-sappiamo-organizzare.firebaseapp.com",
+            projectId: "non-ci-sappiamo-organizzare",
+            storageBucket: "non-ci-sappiamo-organizzare.firebasestorage.app",
+            messagingSenderId: "994257864018",
+            appId: "1:994257864018:web:deff50a9f6a7fed705668b"
+        };
 
-    // 🔗 Configurazione del tuo progetto Firebase (PERSONALIZZATA)
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8wo_xQ3_nb2EKpXSm775skjhzYYeVCms",
-      authDomain: "non-ci-sappiamo-organizzare.firebaseapp.com",
-      projectId: "non-ci-sappiamo-organizzare",
-      storageBucket: "non-ci-sappiamo-organizzare.firebasestorage.app",
-      messagingSenderId: "994257864018",
-      appId: "1:994257864018:web:deff50a9f6a7fed705668b"
-    };
+        // Inizializza Firebase
+        const app = initializeApp(firebaseConfig);
 
-    // 🔌 Inizializza Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+        // Crea un oggetto per l'autenticazione
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-    // 📌 Elementi HTML
-    const loginBtn = document.getElementById("login-btn");
-    const logoutBtn = document.getElementById("logout-btn");
-    const roleBtns = document.querySelectorAll(".role-btn");
+        // Funzione per il login con Google
+        function login() {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    // L'utente è stato autenticato
+                    const user = result.user;
+                    console.log("Utente autenticato:", user);
+                    alert(`Benvenuto, ${user.displayName}!`);
+                    // Qui puoi fare qualcosa con l'utente autenticato (es. salvare i suoi dati)
+                })
+                .catch((error) => {
+                    console.error("Errore durante il login:", error.message);
+                    alert("Errore nel login. Riprova.");
+                });
+        }
 
-    // 🔐 Login
-    loginBtn.onclick = () => {
-      signInWithPopup(auth, provider).catch(error => {
-        alert("Errore nel login: " + error.message);
-      });
-    };
-
-    // 🔓 Logout
-    logoutBtn.onclick = () => {
-      signOut(auth).catch(error => {
-        alert("Errore durante il logout: " + error.message);
-      });
-    };
-
-    // 👤 Controlla se l’utente è loggato
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        roleBtns.forEach(btn => btn.style.display = "inline-block");
-      } else {
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
-        roleBtns.forEach(btn => btn.style.display = "none");
-      }
-    });
-  </script>
+        // Aggiungi un listener al bottone per il login
+        document.getElementById('login-btn').addEventListener('click', login);
+    </script>
 
 </body>
 </html>
+
