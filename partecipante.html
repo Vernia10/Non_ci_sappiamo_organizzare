@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Partecipante - non_ci_sappiamo_organizzare</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f0f0f0;
+    }
+    input, button {
+      margin: 10px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Vota la tua data</h1>
+  
+  <!-- Codice del sondaggio -->
+  <label for="codice">Inserisci il codice del sondaggio:</label>
+  <input type="text" id="codice" placeholder="Codice a 6 cifre">
+  <button id="submit-code">Invia</button>
+
+  <div id="table-container" style="display:none;">
+    <h2>Seleziona una data:</h2>
+    <table id="date-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Numero partecipanti</th>
+          <th>Max partecipanti</th>
+          <th>Seleziona</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Le righe della tabella si popoleranno dinamicamente -->
+      </tbody>
+    </table>
+    <button id="submit-vote">Vota</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8wo_xQ3_nb2EKpXSm775skjhzYYeVCms",
+      authDomain: "non-ci-sappiamo-organizzare.firebaseapp.com",
+      projectId: "non-ci-sappiamo-organizzare",
+      storageBucket: "non-ci-sappiamo-organizzare.firebasestorage.app",
+      messagingSenderId: "994257864018",
+      appId: "1:994257864018:web:deff50a9f6a7fed705668b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const submitCodeBtn = document.getElementById('submit-code');
+    const tableContainer = document.getElementById('table-container');
+    const dateTable = document.getElementById('date-table').getElementsByTagName('tbody')[0];
+    const submitVoteBtn = document.getElementById('submit-vote');
+
+    // Funzione per caricare i dati del sondaggio
+    submitCodeBtn.onclick = async () => {
+      const codice = document.getElementById('codice').value;
+
+      if (!codice) {
+        alert("Inserisci un codice valido.");
+        return;
+      }
+
+      // Recupera il sondaggio da Firestore
+      const docRef = doc(db, "sondaggi", codice);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        loadSurveyData(data);
+      } else {
+        alert("Codice non valido.");
+      }
+    };
+
+    // Funzione per caricare le date e i gruppi
+    function loadSurveyData(data) {
+      const dateList = data.date;
+      const maxExtra = data.maxExtra;
+
+      dateTable.innerHTML = '';  // Reset tabella
+
+      dateList.forEach((date, index) => {
+        const row = dateTable.insertRow();
+        const maxParticipants = index < maxExtra ? 6 : 5;  // Imposta il numero massimo
+        const currentParticipants = data.voti[date]?.length || 0;
+
+        row.innerHTML = `
+          <td>${date}</td>
+          <td>${currentParticipants}</td>
+          <td>${maxParticipants}</td>
+          <td><input type="radio" name="date" value="${date}" ${currentParticipants >= maxParticipants ? 'disabled' : ''}></td>
+        `;
+      });
+
+      tableContainer.style.display = "block";  // Mostra la tabella
+    }
+
+    // Funzione per votare
+    submitVoteBtn.onclick = async () => {
+      const selectedDate = document.querySelector('input[name="date"]:checked')?.value;
+
+      if (!selectedDate) {
+        alert("Seleziona una data.");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Devi essere loggato per votare.");
+        return;
+      }
+
+      const codice = document.getElementById('codice').value;
+      const docRef = doc(db, "sondaggi", codice);
+
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        alert("Codice non valido.");
+        return;
+      }
+
+      const data = docSnap.data();
+      if (data.voti[selectedDate]?.includes(user.email)) {
+        alert("Hai già votato questa data.");
+        return;
+      }
+
+      await updateDoc(docRef, {
+        [`voti.${selectedDate}`]: [...(data.voti[selectedDate] || []), user.email]
+      });
+
+      alert("Voto registrato!");
+      loadSurveyData(data);  // Ricarica i dati aggiornati
+    };
+  </script>
+
+</body>
+</html>
