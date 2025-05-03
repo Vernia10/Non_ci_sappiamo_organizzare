@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login con Google</title>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  </head>
+  <body>
+    <h1>Accedi con Google</h1>
+    <button onclick="login()">Login con Google</button>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyD8wo_xQ3_nb2EKpXSm775skjhzYYeVCms",
+        authDomain: "non-ci-sappiamo-organizzare.firebaseapp.com",
+        projectId: "non-ci-sappiamo-organizzare",
+        storageBucket: "non-ci-sappiamo-organizzare.appspot.com",
+        messagingSenderId: "994257864018",
+        appId: "1:994257864018:web:2a8ea6627af611a705668b"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+
+      function login() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+          .then(result => {
+            const user = result.user;
+            alert(`Ciao ${user.displayName}`);
+          })
+          .catch(error => {
+            console.error("Errore login:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
