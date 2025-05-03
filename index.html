@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Non Ci Sappiamo Organizzare</title>
-  
-  <!-- Carica Firebase SDK -->
-  <script type="module">
-    // Importa le funzioni necessarie dagli SDK di Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  <title>Login con Google</title>
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <h1>Accedi con Google</h1>
+  <button onclick="loginWithGoogle()">Login</button>
+  <p id="user-info"></p>
 
-    // Configurazione della tua app Firebase
+  <script>
+    // Configurazione Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyD8wo_xQ3_nb2EKpXSm775skjhzYYeVCms",
       authDomain: "non-ci-sappiamo-organizzare.firebaseapp.com",
@@ -22,85 +24,23 @@
     };
 
     // Inizializza Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-    // Riferimenti agli elementi del DOM
-    const loginButton = document.getElementById('loginButton');
-    const userInfo = document.getElementById('userInfo');
-    const userName = document.getElementById('userName');
-    const logoutButton = document.getElementById('logoutButton');
-
-    // Funzione per il login con Google
-    loginButton.addEventListener('click', () => {
-      signInWithPopup(auth, provider)
-        .then((result) => {
+    // Funzione di login con Google
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(result => {
           const user = result.user;
-          // Mostra le informazioni dell'utente
-          userName.textContent = user.displayName;
-          userInfo.style.display = 'block';
+          document.getElementById("user-info").innerText = `Ciao, ${user.displayName} (${user.email})`;
         })
-        .catch((error) => {
-          console.error("Errore durante il login:", error);
+        .catch(error => {
+          console.error("Errore login:", error);
+          alert("Errore durante l'accesso: " + error.message);
         });
-    });
-
-    // Funzione per il logout
-    logoutButton.addEventListener('click', () => {
-      signOut(auth).then(() => {
-        userInfo.style.display = 'none';
-        alert("Sei stato disconnesso!");
-      }).catch((error) => {
-        console.error("Errore durante il logout:", error);
-      });
-    });
+    }
   </script>
-
-  <style>
-    /* Stili di base */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f4f4f4;
-    }
-    .container {
-      text-align: center;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-    button:hover {
-      background-color: #357ae8;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <h1>Benvenuto su Non Ci Sappiamo Organizzare</h1>
-    <p>Accedi con il tuo account Google per continuare.</p>
-    
-    <!-- Pulsante per login -->
-    <button id="loginButton">Accedi con Google</button>
-    
-    <div id="userInfo" style="display:none;">
-      <h2>Benvenuto, <span id="userName"></span></h2>
-      <button id="logoutButton">Esci</button>
-    </div>
-  </div>
-
 </body>
 </html>
 
